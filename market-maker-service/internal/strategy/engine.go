@@ -139,12 +139,17 @@ func (e *Engine) evaluate(id string, s *domain.InstrumentSnapshot, binance map[s
 		action = domain.ActionBuy
 	}
 
-	quoteUSD, ok := quoteUSDPrice(inst, binance)
-	if !ok || quoteUSD <= 0 {
+	quoteUSD, okQuote := tokenUSDPrice(inst.Quote.Symbol, binance)
+	baseUSD, okBase := tokenUSDPrice(inst.Base.Symbol, binance)
+	if !okQuote || quoteUSD <= 0 {
 		log.Printf("[strategy] %s: missing quote USD price for %s", id, inst.Quote.Symbol)
 		return domain.Decision{}, false
 	}
-	amountIn, amountInHuman, err := computeAmountIn(action, inst, s.Pool.Mid, notional, quoteUSD)
+	if !okBase || baseUSD <= 0 {
+		log.Printf("[strategy] %s: missing base USD price for %s", id, inst.Base.Symbol)
+		return domain.Decision{}, false
+	}
+	amountIn, amountInHuman, err := computeAmountIn(action, inst, notional, baseUSD, quoteUSD)
 	if err != nil {
 		log.Printf("[strategy] %s: sizing error: %v", id, err)
 		return domain.Decision{}, false
@@ -179,16 +184,17 @@ func (e *Engine) evaluate(id string, s *domain.InstrumentSnapshot, binance map[s
 // notionalUSD * 1.0 in quote units (assuming quote is USD-pegged) — for
 // non-USD quotes we fall back to converting via poolPrice (good enough for the
 // tiny test pairs).
-func computeAmountIn(action domain.ActionKind, inst *domain.Instrument, poolPrice, notionalUSD, quoteUSD float64) (*big.Int, float64, error) {
-	if poolPrice <= 0 {
-		return nil, 0, fmt.Errorf("pool price <= 0")
+func computeAmountIn(action domain.ActionKind, inst *domain.Instrument, notionalUSD, baseUSD, quoteUSD float64) (*big.Int, float64, error) {
+	if baseUSD <= 0 {
+		return nil, 0, fmt.Errorf("base USD price <= 0")
 	}
 	if quoteUSD <= 0 {
 		return nil, 0, fmt.Errorf("quote USD price <= 0")
 	}
 	switch action {
 	case domain.ActionSell:
-		amount := notionalUSD / poolPrice
+		// Sell base for quote. Convert USD notional into base units.
+		amount := notionalUSD / baseUSD
 		return floatToWei(amount, inst.Base.Decimals), amount, nil
 	case domain.ActionBuy:
 		// Buy base by selling quote. Convert USD notional into quote units.
@@ -198,11 +204,8 @@ func computeAmountIn(action domain.ActionKind, inst *domain.Instrument, poolPric
 	return nil, 0, fmt.Errorf("unknown action %q", action)
 }
 
-func quoteUSDPrice(inst *domain.Instrument, binance map[string]domain.Quote) (float64, bool) {
-	if inst == nil {
-		return 0, false
-	}
-	switch inst.Quote.Symbol {
+func tokenUSDPrice(symbol string, binance map[string]domain.Quote) (float64, bool) {
+	switch symbol {
 	case "USDT-Beta":
 		return 1.0, true
 	case "BTC-Beta":
