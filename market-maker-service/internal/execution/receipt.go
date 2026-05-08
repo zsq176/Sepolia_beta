@@ -11,7 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 // erc20ApproveABI is shared by both executors.
@@ -26,7 +25,9 @@ var erc20AllowanceABI, _ = abi.JSON(strings.NewReader(
 // waitReceipt polls TransactionReceipt until either we get one or `timeout`
 // has passed. Returning a typed *types.Receipt lets callers inspect Status,
 // GasUsed and BlockNumber uniformly.
-func waitReceipt(ctx context.Context, client *ethclient.Client, hash common.Hash, timeout time.Duration) (*types.Receipt, error) {
+func waitReceipt(ctx context.Context, client interface {
+	TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error)
+}, hash common.Hash, timeout time.Duration) (*types.Receipt, error) {
 	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
 		select {
@@ -45,7 +46,9 @@ func waitReceipt(ctx context.Context, client *ethclient.Client, hash common.Hash
 
 func hasSufficientAllowance(
 	ctx context.Context,
-	client *ethclient.Client,
+	caller interface {
+		CallContract(ctx context.Context, call ethereum.CallMsg, blockNumber *big.Int) ([]byte, error)
+	},
 	token common.Address,
 	owner common.Address,
 	spender common.Address,
@@ -58,7 +61,7 @@ func hasSufficientAllowance(
 	if err != nil {
 		return false, err
 	}
-	out, err := client.CallContract(ctx, ethereum.CallMsg{To: &token, Data: data}, nil)
+	out, err := caller.CallContract(ctx, ethereum.CallMsg{To: &token, Data: data}, nil)
 	if err != nil {
 		return false, err
 	}

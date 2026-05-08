@@ -213,7 +213,7 @@ func (e *V4Executor) preflightSwap(ctx context.Context, data []byte) error {
 	}
 	callCtx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
-	_, err := e.client.CallContract(callCtx, msg, nil)
+	_, err := e.nonces.CallContractWithFailover(callCtx, msg)
 	if err == nil {
 		return nil
 	}
@@ -314,7 +314,7 @@ func pow10(n int) float64 {
 }
 
 func (e *V4Executor) approveAndWait(ctx context.Context, token, spender common.Address, amount *big.Int) (*types.Receipt, error) {
-	if ok, err := hasSufficientAllowance(ctx, e.client, token, e.nonces.Address(), spender, amount); err == nil && ok {
+	if ok, err := hasSufficientAllowance(ctx, e.nonces, token, e.nonces.Address(), spender, amount); err == nil && ok {
 		return &types.Receipt{Status: 1}, nil
 	}
 	// Use max approval on V4 to avoid per-slice allowance races under async confirms.
@@ -326,5 +326,5 @@ func (e *V4Executor) approveAndWait(ctx context.Context, token, spender common.A
 	if err != nil {
 		return nil, err
 	}
-	return waitReceipt(ctx, e.client, tx.Hash(), e.confirmAfter)
+	return waitReceipt(ctx, e.nonces, tx.Hash(), e.confirmAfter)
 }

@@ -17,6 +17,7 @@ import (
 	"market-maker-service/internal/strategy"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/redis/go-redis/v9"
@@ -31,7 +32,9 @@ type Service struct {
 	strat    *strategy.Engine
 	guard    *risk.Guard
 	store    *db.Store
-	client   *ethclient.Client
+	receiptClient interface {
+		TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error)
+	}
 	executors map[domain.Venue]Executor
 
 	mu      sync.Mutex
@@ -67,7 +70,7 @@ func NewService(
 		strat: strat,
 		guard: guard,
 		store: store,
-		client: client,
+		receiptClient: nonces,
 		executors: map[domain.Venue]Executor{
 			domain.VenueV3: NewV3Executor(client, v3Router, nonces),
 			domain.VenueV4: NewV4Executor(client, v4SwapRouter, v4PoolManager, nonces),
@@ -168,12 +171,12 @@ func (s *Service) execute(snap *domain.MarketSnapshot, d *domain.Decision) {
 }
 
 func (s *Service) awaitConfirmation(instrumentID string, submitted *domain.ExecutionResult) {
-	if s.client == nil || submitted == nil || submitted.TxHash == "" {
+	if s.receiptClient == nil || submitted == nil || submitted.TxHash == "" {
 		return
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
 	defer cancel()
-	rec, err := waitReceipt(ctx, s.client, common.HexToHash(submitted.TxHash), 3*time.Minute)
+	rec, err := waitReceipt(ctx, s.receiptClient, common.HexToHash(submitted.TxHash), 3*time.Minute)
 	if err != nil {
 		log.Printf("[exec] %s: async confirm timeout tx=%s err=%v", instrumentID, submitted.TxHash, err)
 		return

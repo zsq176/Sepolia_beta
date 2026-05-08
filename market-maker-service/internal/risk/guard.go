@@ -16,7 +16,6 @@ import (
 	"market-maker-service/internal/config"
 	"market-maker-service/internal/domain"
 
-	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 // EthPriceProvider returns the current ETH/USD price. Used to express gas
@@ -35,7 +34,9 @@ type instrumentState struct {
 // Guard mediates the fail-safes for the trading bot.
 type Guard struct {
 	cfg     *config.Config
-	client  *ethclient.Client
+	client  interface {
+		SuggestGasPrice(ctx context.Context) (*big.Int, error)
+	}
 	ethPx   EthPriceProvider
 
 	mu     sync.Mutex
@@ -46,7 +47,9 @@ type Guard struct {
 
 // NewGuard constructs a Guard. ethPx is allowed to be nil; in that case the
 // USD gas check falls back to the GasCapGwei limit only.
-func NewGuard(cfg *config.Config, client *ethclient.Client, ethPx EthPriceProvider) *Guard {
+func NewGuard(cfg *config.Config, client interface {
+	SuggestGasPrice(ctx context.Context) (*big.Int, error)
+}, ethPx EthPriceProvider) *Guard {
 	return &Guard{
 		cfg:    cfg,
 		client: client,

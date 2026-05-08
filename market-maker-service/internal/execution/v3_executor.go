@@ -106,7 +106,7 @@ func (e *V3Executor) Execute(ctx context.Context, inst *domain.Instrument, d *do
 }
 
 func (e *V3Executor) approveAndWait(ctx context.Context, token, spender common.Address, amount *big.Int) (*types.Receipt, error) {
-	if ok, err := hasSufficientAllowance(ctx, e.client, token, e.nonces.Address(), spender, amount); err == nil && ok {
+	if ok, err := hasSufficientAllowance(ctx, e.nonces, token, e.nonces.Address(), spender, amount); err == nil && ok {
 		return &types.Receipt{Status: 1}, nil
 	}
 	data, err := erc20ApproveABI.Pack("approve", spender, amount)
@@ -117,7 +117,7 @@ func (e *V3Executor) approveAndWait(ctx context.Context, token, spender common.A
 	if err != nil {
 		return nil, err
 	}
-	return waitReceipt(ctx, e.client, tx.Hash(), e.confirmAfter)
+	return waitReceipt(ctx, e.nonces, tx.Hash(), e.confirmAfter)
 }
 
 func (e *V3Executor) fillReceipt(r *domain.ExecutionResult, tx *types.Transaction, rec *types.Receipt) {

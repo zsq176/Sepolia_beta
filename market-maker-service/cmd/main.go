@@ -74,6 +74,7 @@ func main() {
 	if client == nil {
 		log.Printf("[main] all sepolia rpc endpoints unavailable (running in degraded mode)")
 	}
+	readClient := chain.NewFailoverReader(rpcClients, rpcNames)
 
 	// --- store ---
 	store, err := db.NewStore(cfg.DBPath)
@@ -99,7 +100,7 @@ func main() {
 	}
 
 	// --- risk guard (needs an ETH price provider for USD gas budgeting) ---
-	guard := risk.NewGuard(cfg, client, func() (float64, bool) {
+	guard := risk.NewGuard(cfg, readClient, func() (float64, bool) {
 		return bn.GetPrice("ETHUSDT")
 	})
 
@@ -111,7 +112,6 @@ func main() {
 	var aggregator *market.Aggregator
 	var execSvc *execution.Service
 	if client != nil && len(cfg.Instruments) > 0 {
-		readClient := chain.NewFailoverReader(rpcClients, rpcNames)
 		registry := uniswap.NewRegistry(readClient, common.HexToAddress(cfg.V4PoolManager))
 		aggregator = market.NewAggregator(
 			bn,
@@ -164,7 +164,7 @@ func main() {
 		V4SwapRouter:  cfg.V4SwapRouter,
 		ChainID:       chainID.Int64(),
 	}
-	server := api.NewServer(store, engine, guard, bn, cfg.Instruments, client, apiCfg, cfg, cfg.APIPort)
+	server := api.NewServer(store, engine, guard, bn, cfg.Instruments, readClient, apiCfg, cfg, cfg.APIPort)
 	go server.Start()
 
 	log.Printf("[main] api: http://localhost:%s", cfg.APIPort)

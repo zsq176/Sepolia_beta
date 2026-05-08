@@ -8,6 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
@@ -56,6 +57,81 @@ func (f *FailoverReader) StorageAt(ctx context.Context, account common.Address, 
 		data, err := c.StorageAt(ctx, account, key, blockNumber)
 		if err == nil {
 			return data, nil
+		}
+		lastErr = err
+	}
+	if lastErr == nil {
+		lastErr = fmt.Errorf("no rpc clients configured")
+	}
+	return nil, lastErr
+}
+
+func (f *FailoverReader) SuggestGasPrice(ctx context.Context) (*big.Int, error) {
+	var lastErr error
+	for _, c := range f.clients {
+		v, err := c.SuggestGasPrice(ctx)
+		if err == nil && v != nil && v.Sign() > 0 {
+			return v, nil
+		}
+		lastErr = err
+	}
+	if lastErr == nil {
+		lastErr = fmt.Errorf("no rpc clients configured")
+	}
+	return nil, lastErr
+}
+
+func (f *FailoverReader) SuggestGasTipCap(ctx context.Context) (*big.Int, error) {
+	var lastErr error
+	for _, c := range f.clients {
+		v, err := c.SuggestGasTipCap(ctx)
+		if err == nil && v != nil && v.Sign() > 0 {
+			return v, nil
+		}
+		lastErr = err
+	}
+	if lastErr == nil {
+		lastErr = fmt.Errorf("no rpc clients configured")
+	}
+	return nil, lastErr
+}
+
+func (f *FailoverReader) PendingNonceAt(ctx context.Context, account common.Address) (uint64, error) {
+	var lastErr error
+	for _, c := range f.clients {
+		v, err := c.PendingNonceAt(ctx, account)
+		if err == nil {
+			return v, nil
+		}
+		lastErr = err
+	}
+	if lastErr == nil {
+		lastErr = fmt.Errorf("no rpc clients configured")
+	}
+	return 0, lastErr
+}
+
+func (f *FailoverReader) TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error) {
+	var lastErr error
+	for _, c := range f.clients {
+		v, err := c.TransactionReceipt(ctx, txHash)
+		if err == nil && v != nil {
+			return v, nil
+		}
+		lastErr = err
+	}
+	if lastErr == nil {
+		lastErr = fmt.Errorf("no rpc clients configured")
+	}
+	return nil, lastErr
+}
+
+func (f *FailoverReader) BalanceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error) {
+	var lastErr error
+	for _, c := range f.clients {
+		v, err := c.BalanceAt(ctx, account, blockNumber)
+		if err == nil && v != nil {
+			return v, nil
 		}
 		lastErr = err
 	}

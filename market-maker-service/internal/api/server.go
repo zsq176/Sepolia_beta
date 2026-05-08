@@ -26,7 +26,6 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gorilla/websocket"
 )
 
@@ -39,7 +38,10 @@ type Server struct {
 	insts  []*domain.Instrument
 	wsHub  *WSHub
 	port   string
-	client *ethclient.Client
+	client interface {
+		BalanceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error)
+		CallContract(ctx context.Context, call ethereum.CallMsg, blockNumber *big.Int) ([]byte, error)
+	}
 	cfg    *ConfigAPI
 	auth   *authState
 	rtCfg  *config.Config
@@ -89,7 +91,10 @@ func NewServer(
 	guard *risk.Guard,
 	bn *binance.Client,
 	insts []*domain.Instrument,
-	client *ethclient.Client,
+	client interface {
+		BalanceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error)
+		CallContract(ctx context.Context, call ethereum.CallMsg, blockNumber *big.Int) ([]byte, error)
+	},
 	cfg *ConfigAPI,
 	rtCfg *config.Config,
 	port string,
