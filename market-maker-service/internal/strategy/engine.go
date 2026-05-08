@@ -57,7 +57,7 @@ func (e *Engine) Decide(snap *domain.MarketSnapshot) []domain.Decision {
 	out := make([]domain.Decision, 0, len(snap.Instruments))
 	now := snap.GeneratedAt
 	for id, s := range snap.Instruments {
-		d, ok := e.evaluate(id, s, now)
+		d, ok := e.evaluate(id, s, snap.Binance, now)
 		if ok {
 			out = append(out, d)
 		}
@@ -68,7 +68,7 @@ func (e *Engine) Decide(snap *domain.MarketSnapshot) []domain.Decision {
 // evaluate runs the strategy for a single instrument snapshot. It returns
 // (Decision, true) only when the bot should send an order; otherwise the
 // reason is logged and (zero, false) is returned.
-func (e *Engine) evaluate(id string, s *domain.InstrumentSnapshot, now time.Time) (domain.Decision, bool) {
+func (e *Engine) evaluate(id string, s *domain.InstrumentSnapshot, binance map[string]domain.Quote, now time.Time) (domain.Decision, bool) {
 	inst := s.Instrument
 	if inst == nil {
 		return domain.Decision{}, false
@@ -139,7 +139,12 @@ func (e *Engine) evaluate(id string, s *domain.InstrumentSnapshot, now time.Time
 		action = domain.ActionBuy
 	}
 
-	amountIn, amountInHuman, err := computeAmountIn(action, inst, s.Pool.Mid, notional)
+	quoteUSD, ok := quoteUSDPrice(inst, binance)
+	if !ok || quoteUSD <= 0 {
+		log.Printf("[strategy] %s: missing quote USD price for %s", id, inst.Quote.Symbol)
+		return domain.Decision{}, false
+	}
+	amountIn, amountInHuman, err := computeAmountIn(action, inst, s.Pool.Mid, notional, quoteUSD)
 	if err != nil {
 		log.Printf("[strategy] %s: sizing error: %v", id, err)
 		return domain.Decision{}, false
@@ -174,24 +179,47 @@ func (e *Engine) evaluate(id string, s *domain.InstrumentSnapshot, now time.Time
 // notionalUSD * 1.0 in quote units (assuming quote is USD-pegged) — for
 // non-USD quotes we fall back to converting via poolPrice (good enough for the
 // tiny test pairs).
-func computeAmountIn(action domain.ActionKind, inst *domain.Instrument, poolPrice, notionalUSD float64) (*big.Int, float64, error) {
+func computeAmountIn(action domain.ActionKind, inst *domain.Instrument, poolPrice, notionalUSD, quoteUSD float64) (*big.Int, float64, error) {
 	if poolPrice <= 0 {
 		return nil, 0, fmt.Errorf("pool price <= 0")
+	}
+	if quoteUSD <= 0 {
+		return nil, 0, fmt.Errorf("quote USD price <= 0")
 	}
 	switch action {
 	case domain.ActionSell:
 		amount := notionalUSD / poolPrice
 		return floatToWei(amount, inst.Base.Decimals), amount, nil
 	case domain.ActionBuy:
-		amount := notionalUSD
-		// non-USD quote: convert through poolPrice (e.g. ETH/BTC: notional in
-		// USD ≈ poolPrice_in_BTC * btc_price; we conservatively use 1).
-		if inst.Quote.Symbol != "USDT-Beta" {
-			amount = notionalUSD / poolPrice
-		}
+		// Buy base by selling quote. Convert USD notional into quote units.
+		amount := notionalUSD / quoteUSD
 		return floatToWei(amount, inst.Quote.Decimals), amount, nil
 	}
 	return nil, 0, fmt.Errorf("unknown action %q", action)
+}
+
+func quoteUSDPrice(inst *domain.Instrument, binance map[string]domain.Quote) (float64, bool) {
+	if inst == nil {
+		return 0, false
+	}
+	switch inst.Quote.Symbol {
+	case "USDT-Beta":
+		return 1.0, true
+	case "BTC-Beta":
+		q, ok := binance["BTCUSDT"]
+		if !ok || q.Mid <= 0 {
+			return 0, false
+		}
+		return q.Mid, true
+	case "ETH-Beta":
+		q, ok := binance["ETHUSDT"]
+		if !ok || q.Mid <= 0 {
+			return 0, false
+		}
+		return q.Mid, true
+	default:
+		return 0, false
+	}
 }
 
 // computeMinOut applies slippage tolerance to the expected output of an
