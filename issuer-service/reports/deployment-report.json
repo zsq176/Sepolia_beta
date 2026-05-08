@@ -1,33 +1,33 @@
 {
   "tokens": {
     "deployer": "0x6464aF2B84AB9cf76113270b0abA9B8d069e7938",
-    "btc_beta": "0x0da234C8EE65e6d86c219FA0F140Bf31860276E0",
-    "usdt_beta": "0xb8B3ED36524D01bBf19d4B5Dfb0d9BB0f7e3B597",
-    "eth_beta": "0x596D7a1C21ADa0742c26663965b800C104d76505",
+    "btc_beta": "0x98F82A6C16d2000c87A163F41664D158FA3A09E4",
+    "usdt_beta": "0x0C5F3d8d79838f0bB71aC86b0cad8C9c6dAE1B36",
+    "eth_beta": "0x1F1175DE4112A653F0480BDDa194B4341DF48a3D",
     "chain_id": 11155111,
-    "generated_at": 1778252307
+    "generated_at": 1778256110
   },
   "v2_btc_usdt": {
-    "pair": "0xFeE2E7106e6aBE51E5983FAc0D68f459E9fc83D4",
-    "create_pair_tx": "(already exists)",
-    "add_liquidity_tx": "0xb407521c83ff7850ce6a26320192b35853caa900c58b96b223169e539f6c091b",
-    "burn_lp_tx": "0x82474c3b0309e89be277fccf8fcc21e22ca9e90bfec4165e3faa9ee42b2fc31d",
-    "reserve0": "19956094191098",
-    "reserve1": "24985165914",
-    "updated_at": 1778239263
+    "pair": "0x1f1784b93a7382403E91296B5127D0B272202382",
+    "create_pair_tx": "0xf33a5c08da9734b3df2c3ff0fdbbfd39498db701da9ec51d776c4386bc095afe",
+    "add_liquidity_tx": "0xfa44f65e1a3dd12d2a4dc35824594ad63ebddfe921f2131584d350389a161129",
+    "burn_lp_tx": "0x87340460654cae33e602d90b87e09c856a5847e33bcec143018f8d3842cc1156",
+    "reserve0": "10000000000000",
+    "reserve1": "12494232350",
+    "updated_at": 1778256217
   },
   "v3_btc_usdt": {
-    "pool": "0xF929eEb46e5b01fFf65fBF7d39697122448A7378",
+    "pool": "0xe7eFfE466b066481863197d09a467C44DA71A92A",
     "create_pool_or_init_tx": "(already exists)",
-    "mint_tx": "0xaaea4f4d2a5770ef69840e07e1c0793d8a3871946424c0a63ce1162256e94bc0",
-    "token_id": "227376",
-    "burn_lp_tx": "0x63b8211ffaf9c3368569c21932abeb38464c4d28c16b25207f8cc0a2da74f156",
-    "updated_at": 1778239345
+    "mint_tx": "0xc994cb09b197f127ec10e3c3ffb08dba008d9fbe214423cd004bed9a724926e0",
+    "token_id": "227378",
+    "burn_lp_tx": "0xed8cd5972a2f0df57196ad8cdf66ddaa2d9a471f7581a08bffdce5316cc8a394",
+    "updated_at": 1778256960
   },
   "v4_pools": {
     "pool_manager": "0xE03A1074c86CFeDd5C142C4F04F1a1536e203543",
     "position_manager": "0x429ba70129df741b2ca2a85bc3a2a3328e5c09b4",
-    "records": "[{\"pool\":\"BTC-Beta/USDT-Beta\",\"initTx\":\"(already initialized)\",\"liqTx\":\"(skipped)\",\"tokenId\":\"0\",\"burnTx\":\"(skipped)\"},{\"pool\":\"ETH-Beta/USDT-Beta\",\"initTx\":\"(already initialized)\",\"liqTx\":\"(skipped)\",\"tokenId\":\"0\",\"burnTx\":\"(skipped)\"},{\"pool\":\"ETH-Beta/BTC-Beta\",\"initTx\":\"(already initialized)\",\"liqTx\":\"(skipped)\",\"tokenId\":\"0\",\"burnTx\":\"(skipped)\"}]",
-    "updated_at": 1778239071
+    "records": "[{\"pool\":\"BTC-Beta/USDT-Beta\",\"initTx\":\"0x8e7e2a4e0149a8fc80e3100702ca0e1e3966198f063db43b2a8d6abec73b5e8f\",\"liqTx\":\"0x74926392e492f8ed75cef46ff99b7dc17f808b153dc1b6fec45c4e0334d435bc\",\"tokenId\":\"32697\",\"burnTx\":\"0xdfa035ae31df7fa66def231d288456f149c734c44a753d70be9df4309b64d587\"},{\"pool\":\"ETH-Beta/USDT-Beta\",\"initTx\":\"0x33e53dae8c0ef88add12fd2d6907c851dbebfb36d3e1fe9963b900bd200ab185\",\"liqTx\":\"0xefa51ef20da500968bda587ad30a48e6adaa5b44a170bef28e1a116e51ee6388\",\"tokenId\":\"32698\",\"burnTx\":\"0xeb8d1feba0bfd6bbe983b89f5f992366c13d29ddab9119fded4f03aab5b2975c\"},{\"pool\":\"ETH-Beta/BTC-Beta\",\"initTx\":\"0xef2875a0b27b05111d6a0693a0ea5ed72254c92c49d0addf6288508292dfc718\",\"liqTx\":\"0xd02d8ed485e61c760dddbb336d1efbdd6c0d0fb7bf00767a02d16dbb331da46d\",\"tokenId\":\"32699\",\"burnTx\":\"0x97407fa5b0e602e596c599c58292e6c2b683ebb23ed95dd156d5a16d4a2be8d2\"}]",
+    "updated_at": 1778257248
   }
 }

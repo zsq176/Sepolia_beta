@@ -51,6 +51,7 @@ type Service struct {
 // sign with; chainID is required for EIP-155 signing.
 func NewService(
 	client *ethclient.Client,
+	broadcasters []*ethclient.Client,
 	pk *ecdsa.PrivateKey,
 	chainID *big.Int,
 	v3Router common.Address,
@@ -61,7 +62,7 @@ func NewService(
 	store *db.Store,
 	cfg *config.Config,
 ) *Service {
-	nonces := NewNonces(client, pk, chainID)
+	nonces := NewNonces(client, broadcasters, pk, chainID)
 	svc := &Service{
 		strat: strat,
 		guard: guard,

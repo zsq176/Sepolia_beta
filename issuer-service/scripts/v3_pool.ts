@@ -26,6 +26,7 @@ const POOL_ABI = [
   "function slot0() external view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint32 feeProtocol, bool unlocked)",
   "function token0() external view returns (address)",
   "function token1() external view returns (address)",
+  "function liquidity() external view returns (uint128)",
 ];
 
 function bigIntSqrt(value: bigint): bigint {
@@ -160,8 +161,9 @@ async function main() {
   let mintTxHash = "(skipped)";
   let burnTxHash = "(skipped)";
   let tokenId: bigint = 0n;
-  if (!forceAdd && slotAfter.sqrtPriceX96 !== 0n) {
-    console.log("Skipping mint by default (set V3_FORCE_ADD=1 to force a new LP NFT)");
+  const currentLiquidity: bigint = await pool.liquidity();
+  if (!forceAdd && currentLiquidity > 0n) {
+    console.log("Skipping mint: pool already has liquidity (set V3_FORCE_ADD=1 to force)");
   } else {
     // Approve tokens
     const btc = new ethers.Contract(btcAddr, ERC20_ABI, deployer);

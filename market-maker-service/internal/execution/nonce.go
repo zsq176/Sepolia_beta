@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"math/big"
+	"strings"
 	"sync"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -18,22 +19,30 @@ import (
 // when V3 and V4 executors run concurrently the chain only sees monotonically
 // increasing nonces from this account.
 type Nonces struct {
-	client  *ethclient.Client
-	pk      *ecdsa.PrivateKey
-	address common.Address
-	chainID *big.Int
+	client      *ethclient.Client
+	broadcasters []*ethclient.Client
+	pk          *ecdsa.PrivateKey
+	address     common.Address
+	chainID     *big.Int
 
 	mu   sync.Mutex
 	next uint64 // next nonce to assign; 0 means "ask the node"
 }
 
 // NewNonces resolves the from-address from the private key.
-func NewNonces(client *ethclient.Client, pk *ecdsa.PrivateKey, chainID *big.Int) *Nonces {
+func NewNonces(client *ethclient.Client, broadcasters []*ethclient.Client, pk *ecdsa.PrivateKey, chainID *big.Int) *Nonces {
+	bs := make([]*ethclient.Client, 0, len(broadcasters))
+	for _, c := range broadcasters {
+		if c != nil {
+			bs = append(bs, c)
+		}
+	}
 	return &Nonces{
-		client:  client,
-		pk:      pk,
-		address: crypto.PubkeyToAddress(pk.PublicKey),
-		chainID: chainID,
+		client:       client,
+		broadcasters: bs,
+		pk:           pk,
+		address:      crypto.PubkeyToAddress(pk.PublicKey),
+		chainID:      chainID,
 	}
 }
 
@@ -75,12 +84,42 @@ func (n *Nonces) SignAndSend(ctx context.Context, to common.Address, data []byte
 		n.next = 0 // resync on failure
 		return nil, fmt.Errorf("sign: %w", err)
 	}
-	if err := n.client.SendTransaction(ctx, signed); err != nil {
+	if err := n.sendWithFailover(ctx, signed); err != nil {
 		n.next = 0 // resync on failure
 		return nil, fmt.Errorf("send: %w", err)
 	}
 	n.next = nonce + 1
 	return signed, nil
+}
+
+func (n *Nonces) sendWithFailover(ctx context.Context, tx *types.Transaction) error {
+	if len(n.broadcasters) == 0 {
+		return fmt.Errorf("no broadcaster configured")
+	}
+	var lastErr error
+	for _, c := range n.broadcasters {
+		if c == nil {
+			continue
+		}
+		err := c.SendTransaction(ctx, tx)
+		if err == nil || isAlreadyKnownErr(err) {
+			return nil
+		}
+		lastErr = err
+	}
+	if lastErr == nil {
+		lastErr = fmt.Errorf("all rpc broadcasters failed")
+	}
+	return lastErr
+}
+
+func isAlreadyKnownErr(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "already known") ||
+		strings.Contains(msg, "known transaction")
 }
 
 func (n *Nonces) allocate(ctx context.Context) (uint64, error) {

@@ -9,12 +9,11 @@ import (
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 // V2Reader reads getReserves() from a UniswapV2Pair and turns it into a price.
 type V2Reader struct {
-	client *ethclient.Client
+	client ChainReader
 }
 
 func (r *V2Reader) Read(ctx context.Context, inst *domain.Instrument) (float64, time.Time, error) {

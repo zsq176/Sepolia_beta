@@ -11,6 +11,7 @@ import (
 	"time"
 	"market-maker-service/internal/api"
 	"market-maker-service/internal/binance"
+	"market-maker-service/internal/chain"
 	"market-maker-service/internal/config"
 	"market-maker-service/internal/db"
 	"market-maker-service/internal/execution"
@@ -35,19 +36,43 @@ import (
 // Each layer talks only through interfaces / value types from internal/domain.
 func main() {
 	log.Println("[main] starting trading bot…")
-	if err := godotenv.Load(); err == nil {
+	if err := godotenv.Load(".env"); err == nil {
 		log.Println("[main] loaded .env")
+	} else if err := godotenv.Load("../.env"); err == nil {
+		log.Println("[main] loaded ../.env")
+	} else {
+		log.Printf("[main] .env not loaded: %v", err)
 	}
 
 	cfg := config.Load()
 
 	// --- chain client ---
-	client, clientErr := ethclient.Dial(cfg.SepoliaRPC)
-	if clientErr != nil {
-		log.Printf("[main] sepolia rpc unavailable: %v (running in degraded mode)", clientErr)
-	} else {
-		defer client.Close()
-		log.Println("[main] connected to sepolia")
+	var client *ethclient.Client
+	rpcClients := make([]*ethclient.Client, 0, 1+len(cfg.SepoliaRPCFallbacks))
+	rpcNames := make([]string, 0, 1+len(cfg.SepoliaRPCFallbacks))
+	rpcURLs := append([]string{cfg.SepoliaRPC}, cfg.SepoliaRPCFallbacks...)
+	for i, url := range rpcURLs {
+		c, err := ethclient.Dial(url)
+		if err != nil {
+			log.Printf("[main] rpc[%d] unavailable: %v", i, err)
+			continue
+		}
+		rpcClients = append(rpcClients, c)
+		rpcNames = append(rpcNames, url)
+		if client == nil {
+			client = c
+		}
+		if i == 0 {
+			log.Println("[main] connected to primary sepolia rpc")
+		} else {
+			log.Printf("[main] connected to fallback rpc[%d]", i)
+		}
+	}
+	for _, c := range rpcClients {
+		defer c.Close()
+	}
+	if client == nil {
+		log.Printf("[main] all sepolia rpc endpoints unavailable (running in degraded mode)")
 	}
 
 	// --- store ---
@@ -86,7 +111,8 @@ func main() {
 	var aggregator *market.Aggregator
 	var execSvc *execution.Service
 	if client != nil && len(cfg.Instruments) > 0 {
-		registry := uniswap.NewRegistry(client, common.HexToAddress(cfg.V4PoolManager))
+		readClient := chain.NewFailoverReader(rpcClients, rpcNames)
+		registry := uniswap.NewRegistry(readClient, common.HexToAddress(cfg.V4PoolManager))
 		aggregator = market.NewAggregator(
 			bn,
 			registry,
@@ -104,7 +130,7 @@ func main() {
 			} else {
 				strat := strategy.NewEngine(cfg.Instruments, cfg)
 				svc := execution.NewService(
-					client, pk, chainID,
+					client, rpcClients, pk, chainID,
 					common.HexToAddress(cfg.V3SwapRouter),
 					common.HexToAddress(cfg.V4SwapRouter),
 					common.HexToAddress(cfg.V4PoolManager),

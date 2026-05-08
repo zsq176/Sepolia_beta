@@ -18,9 +18,10 @@ import (
 // aggregated `Instruments` slice instead.
 type Config struct {
 	// --- Chain & RPC ---
-	SepoliaRPC string
-	ChainID    int64
-	PrivateKey string
+	SepoliaRPC          string
+	SepoliaRPCFallbacks []string
+	ChainID             int64
+	PrivateKey          string
 
 	// --- Token addresses ---
 	BTCBetaAddr  string
@@ -94,9 +95,10 @@ type Config struct {
 // instrument matrix that the strategy/execution layers consume.
 func Load() *Config {
 	cfg := &Config{
-		SepoliaRPC: getEnv("SEPOLIA_RPC", "https://sepolia.infura.io/v3/YOUR_KEY"),
-		ChainID:    getEnvInt64("CHAIN_ID", 11155111),
-		PrivateKey: getEnv("PRIVATE_KEY", ""),
+		SepoliaRPC:          getEnv("SEPOLIA_RPC", "https://sepolia.infura.io/v3/YOUR_KEY"),
+		SepoliaRPCFallbacks: splitCSV(getEnv("SEPOLIA_RPC_FALLBACKS", "")),
+		ChainID:             getEnvInt64("CHAIN_ID", 11155111),
+		PrivateKey:          getEnv("PRIVATE_KEY", ""),
 
 		BTCBetaAddr:  getEnv("BTC_BETA_ADDR", ""),
 		USDTBetaAddr: getEnv("USDT_BETA_ADDR", ""),
@@ -301,6 +303,27 @@ func getEnvInt64(key string, fallback int64) int64 {
 		}
 	}
 	return fallback
+}
+
+func splitCSV(raw string) []string {
+	if strings.TrimSpace(raw) == "" {
+		return nil
+	}
+	parts := strings.Split(raw, ",")
+	out := make([]string, 0, len(parts))
+	seen := map[string]struct{}{}
+	for _, p := range parts {
+		v := strings.TrimSpace(p)
+		if v == "" {
+			continue
+		}
+		if _, ok := seen[v]; ok {
+			continue
+		}
+		seen[v] = struct{}{}
+		out = append(out, v)
+	}
+	return out
 }
 
 func maxFloat(a, b float64) float64 {

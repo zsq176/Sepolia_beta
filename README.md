@@ -101,6 +101,7 @@
 ### 核心能力
 
 - 判定 TWAP + 执行 TWAP（分批执行）。
+- 支持读、写 RPC多节点读故障切换和限流退避
 - 风控门：偏离阈值、冷却、Gas 上限、日预算上限。
 - 数据质量分级：`live / fallback / stale / invalid`。
 - 账户隔离：基于钱包签名登录与 token 会话。
@@ -124,11 +125,17 @@
 
 参考 `market-maker-service/.env.example` 填写 `.env`，重点配置：
 
-- RPC 与私钥。
+- RPC 与私钥（支持多节点读故障切换）。
 - 交易对地址与 PoolKey。
 - 风控参数（`MAX_GAS_USD`、`DAILY_BUDGET_USD` 等）。
 - 鉴权参数（`API_AUTH_SECRET`、`OPERATOR_WALLET`）。
 - 中间件参数（`REDIS_ADDR`、`REDIS_QUEUE`、`REDIS_LOCK_TTL_SEC`）。
+
+RPC 推荐配置：
+
+- `SEPOLIA_RPC`：主 RPC（写交易与默认读请求入口）。
+- `SEPOLIA_RPC_FALLBACKS`：备用 RPC 列表，逗号分隔；当主节点读失败时自动按顺序切换。
+- 交易发送也会复用同一组备用节点做广播兜底（使用同一笔已签名交易，不会重复签名）。
 
 ---
 

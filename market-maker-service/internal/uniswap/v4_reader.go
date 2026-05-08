@@ -10,14 +10,13 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 // V4Reader reads the packed slot0 of a V4 pool directly out of the
 // PoolManager's `_pools` mapping (storage slot 6) without needing the
 // (non-existent on Sepolia) StateView wrapper.
 type V4Reader struct {
-	client      *ethclient.Client
+	client      ChainReader
 	poolManager common.Address
 }
 

@@ -9,12 +9,11 @@ import (
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 // V3Reader reads slot0() from a UniswapV3Pool to compute the current mid price.
 type V3Reader struct {
-	client *ethclient.Client
+	client ChainReader
 }
 
 func (r *V3Reader) Read(ctx context.Context, inst *domain.Instrument) (float64, time.Time, error) {

@@ -14,9 +14,10 @@ import (
 	"time"
 	"market-maker-service/internal/domain"
 
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
+	"math/big"
 )
 
 // PriceReader fetches a fresh price for a single instrument from the chain.
@@ -31,8 +32,14 @@ type Registry struct {
 	readers map[domain.Venue]PriceReader
 }
 
+// ChainReader captures the minimum RPC surface needed by V2/V3/V4 readers.
+type ChainReader interface {
+	CallContract(ctx context.Context, msg ethereum.CallMsg, blockNumber *big.Int) ([]byte, error)
+	StorageAt(ctx context.Context, account common.Address, key common.Hash, blockNumber *big.Int) ([]byte, error)
+}
+
 // NewRegistry wires up the canonical V2/V3/V4 readers.
-func NewRegistry(client *ethclient.Client, v4PoolManager common.Address) *Registry {
+func NewRegistry(client ChainReader, v4PoolManager common.Address) *Registry {
 	return &Registry{
 		readers: map[domain.Venue]PriceReader{
 			domain.VenueV2: &V2Reader{client: client},
