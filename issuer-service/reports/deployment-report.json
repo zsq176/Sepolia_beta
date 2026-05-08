@@ -1,0 +1,33 @@
+{
+  "tokens": {
+    "deployer": "0x6464aF2B84AB9cf76113270b0abA9B8d069e7938",
+    "btc_beta": "0x0da234C8EE65e6d86c219FA0F140Bf31860276E0",
+    "usdt_beta": "0xb8B3ED36524D01bBf19d4B5Dfb0d9BB0f7e3B597",
+    "eth_beta": "0x596D7a1C21ADa0742c26663965b800C104d76505",
+    "chain_id": 11155111,
+    "generated_at": 1778252307
+  },
+  "v2_btc_usdt": {
+    "pair": "0xFeE2E7106e6aBE51E5983FAc0D68f459E9fc83D4",
+    "create_pair_tx": "(already exists)",
+    "add_liquidity_tx": "0xb407521c83ff7850ce6a26320192b35853caa900c58b96b223169e539f6c091b",
+    "burn_lp_tx": "0x82474c3b0309e89be277fccf8fcc21e22ca9e90bfec4165e3faa9ee42b2fc31d",
+    "reserve0": "19956094191098",
+    "reserve1": "24985165914",
+    "updated_at": 1778239263
+  },
+  "v3_btc_usdt": {
+    "pool": "0xF929eEb46e5b01fFf65fBF7d39697122448A7378",
+    "create_pool_or_init_tx": "(already exists)",
+    "mint_tx": "0xaaea4f4d2a5770ef69840e07e1c0793d8a3871946424c0a63ce1162256e94bc0",
+    "token_id": "227376",
+    "burn_lp_tx": "0x63b8211ffaf9c3368569c21932abeb38464c4d28c16b25207f8cc0a2da74f156",
+    "updated_at": 1778239345
+  },
+  "v4_pools": {
+    "pool_manager": "0xE03A1074c86CFeDd5C142C4F04F1a1536e203543",
+    "position_manager": "0x429ba70129df741b2ca2a85bc3a2a3328e5c09b4",
+    "records": "[{\"pool\":\"BTC-Beta/USDT-Beta\",\"initTx\":\"(already initialized)\",\"liqTx\":\"(skipped)\",\"tokenId\":\"0\",\"burnTx\":\"(skipped)\"},{\"pool\":\"ETH-Beta/USDT-Beta\",\"initTx\":\"(already initialized)\",\"liqTx\":\"(skipped)\",\"tokenId\":\"0\",\"burnTx\":\"(skipped)\"},{\"pool\":\"ETH-Beta/BTC-Beta\",\"initTx\":\"(already initialized)\",\"liqTx\":\"(skipped)\",\"tokenId\":\"0\",\"burnTx\":\"(skipped)\"}]",
+    "updated_at": 1778239071
+  }
+}

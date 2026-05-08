@@ -1,0 +1,31 @@
+# Environment files with secrets
+.env
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Build output
+user-console/dist/
+user-console/tsconfig.tsbuildinfo
+issuer-service/artifacts/
+issuer-service/cache/
+issuer-service/typechain-types/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Go
+market-maker-service/market-maker-service

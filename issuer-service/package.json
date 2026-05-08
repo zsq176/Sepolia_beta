@@ -1,0 +1,41 @@
+{
+  "name": "issuer-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "hardhat compile",
+    "clean": "hardhat clean",
+    "deploy": "hardhat run scripts/deploy.ts --network sepolia",
+    "v2": "hardhat run scripts/v2_pool.ts --network sepolia",
+    "v3": "hardhat run scripts/v3_pool.ts --network sepolia",
+    "v4": "hardhat run scripts/v4_pool.ts --network sepolia",
+    "transfer": "hardhat run scripts/transfer_to_tester.ts --network sepolia",
+    "test": "hardhat test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.1.3",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@types/node": "^25.6.0",
+    "dotenv": "^17.4.2",
+    "ethers": "^6.16.0",
+    "hardhat": "^2.28.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.6.1",
+    "@uniswap/v2-core": "^1.0.1",
+    "@uniswap/v2-periphery": "^1.1.0-beta.0",
+    "@uniswap/v3-core": "^1.0.1",
+    "@uniswap/v3-periphery": "^1.4.4",
+    "@uniswap/v3-sdk": "^3.30.0",
+    "@uniswap/v4-core": "^1.0.2",
+    "@uniswap/v4-periphery": "^1.0.3",
+    "@uniswap/v4-sdk": "^2.0.0",
+    "jsbi": "^4.3.2"
+  }
+}

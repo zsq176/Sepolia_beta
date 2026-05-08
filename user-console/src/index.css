@@ -1,0 +1,200 @@
+:root {
+  --bg: #0d1117;
+  --bg-card: #161b22;
+  --bg-input: #21262d;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --text-dim: #8b949e;
+  --green: #3fb950;
+  --red: #f85149;
+  --blue: #58a6ff;
+  --accent: #d2a8ff;
+  --orange: #d2991d;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+#root { min-height: 100vh; }
+
+.container { max-width: 1400px; margin: 0 auto; padding: 0 16px; }
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+}
+
+.header h1 { font-size: 18px; color: var(--accent); }
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px;
+}
+
+.grid-full {
+  grid-column: 1 / -1;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.card h3 {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-input);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s;
+}
+
+.btn:hover { background: var(--border); }
+.btn-primary { background: var(--accent); color: #000; border-color: var(--accent); }
+.btn-primary:hover { opacity: 0.9; }
+.btn-green { background: var(--green); color: #000; border-color: var(--green); }
+.btn-red { background: var(--red); color: #fff; border-color: var(--red); }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 13px;
+}
+
+.price-row .label { color: var(--text-dim); }
+.price-row .value { font-family: monospace; }
+.price-positive { color: var(--green); }
+.price-negative { color: var(--red); }
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group input {
+  padding: 8px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+select {
+  padding: 6px 10px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+}
+
+.input-group input:focus { outline: none; border-color: var(--accent); }
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.flex-row { display: flex; gap: 8px; }
+.flex-col { display: flex; flex-direction: column; gap: 8px; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+table th, table td {
+  padding: 6px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+table th { color: var(--text-dim); font-weight: 500; }
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.badge-green { background: rgba(63,185,80,0.15); color: var(--green); }
+.badge-red { background: rgba(248,81,73,0.15); color: var(--red); }
+.badge-yellow { background: rgba(210,153,29,0.15); color: var(--orange); }
+
+.status-bar {
+  display: flex;
+  gap: 16px;
+  padding: 6px 24px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  align-items: center;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-connected { background: var(--green); }
+.status-disconnected { background: var(--red); }
+
+.ticker-value {
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+.flash-up {
+  color: var(--green);
+  text-shadow: 0 0 10px rgba(63, 185, 80, 0.9);
+  animation: tickerFlashUp 0.45s ease-out;
+}
+.flash-down {
+  color: var(--red);
+  text-shadow: 0 0 10px rgba(248, 81, 73, 0.9);
+  animation: tickerFlashDown 0.45s ease-out;
+}
+
+@keyframes tickerFlashUp {
+  0% { transform: scale(1.0); opacity: 0.9; }
+  35% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1.0); opacity: 1; }
+}
+
+@keyframes tickerFlashDown {
+  0% { transform: scale(1.0); opacity: 0.9; }
+  35% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1.0); opacity: 1; }
+}
+
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr; }
+}
